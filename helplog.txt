@@ -1,0 +1,25 @@
+Help log:
+10/27/2016 
+Have to Change the data structure of the Mesh
+Solved:
+In homework 5, I store the normal and color in each vertex, and this results there are 24 vertices in a cube mesh. Which means there are 3 vertices represent the same vertex. This will result lots of problems in more complicated operation, so I change the data structure of the mesh class, and calculate the normal and color in the create() function, finally, set the mesh only has 8 vertices for one cube.
+
+10/29/2016
+How to Triangulate a polygon with more than four edges?
+Solved:
+Just as the same method to split a quadrangle, and create a new face which only has three edges. And then continue to triangulate the remain polygon until it has three edges.
+
+10/30/2016
+What the specific algorithm of the Catmull-Clark subdivision?
+Solved:
+http://www.rorydriscoll.com/2008/08/01/catmull-clark-subdivision-the-basics/
+
+10/31/2016
+When subdivision the Cow and the deeper subdivision of the cube, the program will crash.
+Unsolved:
+I examine step by step and find out that it will crash when the calling of the create(), I think it may be the hardware problem, my computer may cannot do such complicated computation by its GPU.
+
+11/1/2016
+How the vertices of a sharp face will change when subdivision?
+Solved:
+All of the vertices of the sharp face will be sharp, too.
