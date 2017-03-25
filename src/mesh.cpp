@@ -77,14 +77,8 @@ void Mesh::create(){
     std::vector <glm::vec4> vert_pos;
     std::vector <glm::vec4> vert_nor;
     std::vector <glm::vec4> vert_col;
-   // glm::vec4 mesh_vert_nor[Vertices.size()];
-
-//    //Set Vertex position and normal and colors:
-//    for(int i = 0; i < Vertices.size(); i++){
-//        mesh_vert_pos[i] = glm::vec4(Vertices[i]->pos[0],Vertices[i]->pos[1],Vertices[i]->pos[2],1);
-//        mesh_vert_nor[i] = glm::vec4(Vertices[i]->nor[0],Vertices[i]->nor[1],Vertices[i]->nor[2],1);
-//        mesh_vert_col[i] = glm::vec4(Vertices[i]->col,1);
-//    }
+    std::vector <glm::ivec2> vert_inf;
+    std::vector <glm::vec2> vert_wei;
 
     count = 0;
     //Set Indices colors normals, positions by faces:
@@ -102,26 +96,36 @@ void Mesh::create(){
         vert_pos.push_back(glm::vec4(edge->vert->pos,1));
         vert_col.push_back(glm::vec4(color,1));
         vert_nor.push_back(glm::vec4(normal, 1));
-        //calculate the next vert's normal:
-//        vert_nor.push_back(glm::vec4(glm::normalize(glm::cross((edge->next->vert->pos - edge->vert->pos),
-//                                      (edge->next->next->vert->pos - edge->next->vert->pos))), 1));
+        //push back the influence of Joints
+        glm::ivec2 inf;
+        glm::vec2 weights;
+        if(edge->vert->J_I[0].J != nullptr && edge->vert->J_I[1].J != nullptr){
+            inf[0] = edge->vert->J_I[0].J->id;
+            inf[1] = edge->vert->J_I[1].J->id;
+            weights[0] = edge->vert->J_I[0].w;
+            weights[1] = edge->vert->J_I[1].w;
+        }
+        vert_inf.push_back(inf);
+        vert_wei.push_back(weights);
+
         k++;
         while(edge->next != Faces[i]->start_edge){
             edge = edge->next;
             vert_pos.push_back(glm::vec4(edge->vert->pos, 1));
             vert_col.push_back(glm::vec4(color, 1));
             vert_nor.push_back(glm::vec4(normal, 1));
-//            //calculate the next vert's normal:
-//            if(edge->next != Faces[i]->start_edge){
-//                vert_nor.push_back(glm::vec4(glm::normalize(glm::cross((edge->next->vert->pos - edge->vert->pos),
-//                                                                       (edge->next->next->vert->pos - edge->next->vert->pos))), 1));
-
-//            }
-//            else{
-//                //update the first vert's normal:
-//                vert_nor[set] = glm::vec4(glm::normalize(glm::cross((edge->next->vert->pos - edge->vert->pos),
-//                                                                    (edge->next->next->vert->pos - edge->next->vert->pos))), 1);
-//            }
+            //push back the influence of Joints
+            glm::ivec2 inf;
+            glm::vec2 weights;
+            if(edge->vert->J_I[0].J != nullptr && edge->vert->J_I[1].J != nullptr){
+                inf[0] = edge->vert->J_I[0].J->id;
+                inf[1] = edge->vert->J_I[1].J->id;
+                weights[0] = edge->vert->J_I[0].w;
+                weights[1] = edge->vert->J_I[1].w;
+                std::cout<<edge->vert->J_I[0].J->name.toStdString()<<inf[0]<<" weight: "<< weights[0]<<"  "<<edge->vert->J_I[1].J->name.toStdString()<<inf[1]<<" weight: "<<weights[1]<<"\n";
+            }
+            vert_inf.push_back(inf);
+            vert_wei.push_back(weights);
             k++;
         }
         //Triangluate:
@@ -136,6 +140,9 @@ void Mesh::create(){
     glm::vec4 mesh_vert_col[vert_pos.size()];
     glm::vec4 mesh_vert_pos[vert_pos.size()];
     glm::vec4 mesh_vert_nor[vert_pos.size()];
+    glm::ivec2 mesh_vert_inf[vert_pos.size()];
+    glm::vec2 mesh_vert_wei[vert_pos.size()];
+
     for(int i = 0; i < count; i++){
         mesh_idx_array[i] = mesh_idx[i];
     }
@@ -143,6 +150,8 @@ void Mesh::create(){
         mesh_vert_pos[i] = vert_pos[i];
         mesh_vert_nor[i] = vert_nor[i];
         mesh_vert_col[i] = vert_col[i];
+        mesh_vert_inf[i] = vert_inf[i];
+        mesh_vert_wei[i] = vert_wei[i];
     }
 
     // Create a VBO on our GPU and store its handle in bufIdx
@@ -168,6 +177,14 @@ void Mesh::create(){
     generateCol();
     context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
     context->glBufferData(GL_ARRAY_BUFFER, vert_pos.size() * sizeof(glm::vec4), mesh_vert_col, GL_STATIC_DRAW);
+    //Create a VBO of influencer
+    generateInf();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufInfluencer);
+    context->glBufferData(GL_ARRAY_BUFFER, vert_pos.size() * sizeof(glm::ivec2), mesh_vert_inf, GL_STATIC_DRAW);
+    //Create a VBO of Weights
+    generateWei();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufWeights);
+    context->glBufferData(GL_ARRAY_BUFFER, vert_pos.size() * sizeof(glm::vec2), mesh_vert_wei, GL_STATIC_DRAW);
 }
 
 void Mesh::LoadCube(){

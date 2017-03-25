@@ -1,6 +1,13 @@
 #ifndef HALFEDGE_H
 #define HALFEDGE_H
 #include <la.h>
+#include <joint.h>
+
+struct Influ_pair{
+    Joint *J = nullptr;
+    double distance = -1;
+    double w = 0.0;
+};
 
 class HalfEdge;
 class Vertex{
@@ -12,6 +19,8 @@ public:
     Vertex();
     Vertex(int id);
     Vertex(glm::vec3 pos, HalfEdge *edge, int id);
+    //Joint Influence
+    Influ_pair J_I[2];
 };
 
 class Face{

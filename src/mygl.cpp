@@ -8,13 +8,18 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QDir>
-
+#include <QTextStream>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <math.h>
+#include <queue>
 
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       geom_cylinder(this), geom_sphere(this),geom_mesh(this),
       HighlightVertex(this),HighlightHalfLine(this),HighlightHFace(this),
-      prog_lambert(this), prog_flat(this),timeCount(0),RenderMode(0),Func1(0),
+      prog_lambert(this), prog_flat(this), prog_skeleton(this),timeCount(0),RenderMode(0),Func1(0),
       gl_camera()
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -25,6 +30,8 @@ MyGL::MyGL(QWidget *parent)
     timeCount = 0;
     RenderMode = 0;
     Func1 = 0;
+    Selected = nullptr;
+    Root = new Joint(QString("Root"));
 }
 
 MyGL::~MyGL()
@@ -37,6 +44,7 @@ MyGL::~MyGL()
     HighlightVertex.destroy();
     HighlightHalfLine.destroy();
     HighlightHFace.destroy();
+
 }
 
 void MyGL::initializeGL()
@@ -86,20 +94,20 @@ void MyGL::initializeGL()
     HighlightHalfLine.create();
     HighlightHFace.setFace(geom_mesh.Faces[1]);
     HighlightHFace.create();
-
-
+    Traverse(Root);
     //emit signals
     emit sig_PassVertices(geom_mesh.Vertices.size());
     emit sig_PassHalfEdges(geom_mesh.HalfEdges.size());
     emit sig_PassFaces(geom_mesh.Faces.size());
-
+    emit sig_RootNode(Root);
 //    int test = geom_mesh.Test();
 
     // Create and set up the diffuse shader
     prog_lambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     prog_flat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-
+    // Create and set up the skeleton shader
+    prog_skeleton.create(":/glsl/skeleton.vert.glsl", ":/glsl/skeleton.frag.glsl");
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
@@ -123,6 +131,7 @@ void MyGL::resizeGL(int w, int h)
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
 
     prog_lambert.setViewProjMatrix(viewproj);
+    prog_skeleton.setViewProjMatrix(viewproj);
     prog_flat.setViewProjMatrix(viewproj);
 
     printGLErrorLog();
@@ -136,8 +145,6 @@ void MyGL::paintGL()
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    prog_flat.setViewProjMatrix(gl_camera.getViewProj());
-    prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
 
 #define NOPE
 #ifdef NOPE
@@ -145,22 +152,42 @@ void MyGL::paintGL()
     //Note that we have to transpose the model matrix before passing it to the shader
     //This is because OpenGL expects column-major matrices, but you've
     //implemented row-major matrices.
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-2,0,0)) * glm::scale(glm::mat4(1.0f), glm::vec3(3,3,3));
+    glm::mat4 model;// = glm::translate(glm::mat4(1.0f), glm::vec3(-2,0,0)) * glm::scale(glm::mat4(1.0f), glm::vec3(3,3,3));
     //Send the geometry's transformation matrix to the shader
-    prog_lambert.setModelMatrix(model);
+
     //Draw the example sphere using our lambert shader
     //prog_lambert.draw(geom_sphere);
 
     //Draw mesh
-    prog_lambert.draw(geom_mesh);
-    prog_lambert.draw(HighlightVertex);
-    prog_lambert.draw(HighlightHalfLine);
-    prog_lambert.draw(HighlightHFace);
+
+
+    if(Skeleton_Shader){
+        SendBindTOGPU();
+        SendTransTOGPU();
+        prog_skeleton.setViewProjMatrix(gl_camera.getViewProj());
+        prog_skeleton.setModelMatrix(model);
+        prog_skeleton.draw(geom_mesh);
+    }
+    else {
+        prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
+        prog_lambert.setModelMatrix(model);
+        prog_lambert.draw(geom_mesh);
+    }
+
+    glDisable(GL_DEPTH_TEST);
+    glm::mat4 viewProjMat = gl_camera.getViewProj();
+    prog_flat.setViewProjMatrix(viewProjMat);
+    prog_flat.setModelMatrix(model);
+    prog_flat.draw(HighlightVertex);
+    prog_flat.draw(HighlightHalfLine);
+    prog_flat.draw(HighlightHFace);
+    Traverse_Draw(Root);
+    glEnable(GL_DEPTH_TEST);
 
     //Now do the same to render the cylinder
     //We've rotated it -45 degrees on the Z axis, then translated it to the point <2,2,0>
-    model = glm::translate(glm::mat4(1.0f), glm::vec3(2,2,0)) * glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0,0,1));
-    prog_lambert.setModelMatrix(model);
+//    model = glm::translate(glm::mat4(1.0f), glm::vec3(2,2,0)) * glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0,0,1));
+//    prog_lambert.setModelMatrix(model);
     //prog_lambert.draw(geom_cylinder);
 
 
@@ -612,4 +639,299 @@ void MyGL::slot_BevelingFace(){
     emit sig_PassHalfEdges(geom_mesh.HalfEdges.size());
     emit sig_PassFaces(geom_mesh.Faces.size());
     this->update();
+}
+
+//slot of Load Qjson of skeleton
+void MyGL::slot_LoadSkeleton(){
+    LoadQJsonSkeleton();
+    Traverse(Root);
+    emit sig_RootNode(Root);
+    this->update();
+}
+
+//slot of Skinning
+void MyGL::slot_Skinning(){
+    SetBindMatrix();
+    Skinning();
+    std::cout<<"Skinning Success!\n";
+    setSkeletonShader();
+    //create
+    geom_mesh.create();
+    Traverse(Root);
+    this->update();
+}
+
+//slot of ItemSelected
+void MyGL::slot_SelectedJoint(QTreeWidgetItem *q){
+    Selected = (Joint*) q;
+    Traverse(Root);
+    glm::mat4 trans = Selected->GetOverallTranformation();
+    QString FirstLine, SecondLine, ThirdLine, FourthLine,a,b,c,d;
+    FirstLine = a.setNum(trans[0][0]) +QString("  ")+ b.setNum(trans[0][1]) +QString("  ")+ c.setNum(trans[0][2]) +QString("  ")+ d.setNum(trans[0][3]);
+    SecondLine = a.setNum(trans[1][0]) +QString("  ")+ b.setNum(trans[1][1]) +QString("  ")+ c.setNum(trans[1][2]) +QString("  ")+ d.setNum(trans[1][3]);
+    ThirdLine = a.setNum(trans[2][0]) +QString("  ")+ b.setNum(trans[2][1]) + QString("  ")+ c.setNum(trans[2][2]) +QString("  ")+ d.setNum(trans[2][3]);
+    FourthLine = a.setNum(trans[3][0]) +QString("  ")+ b.setNum(trans[3][1]) + QString("  ")+ c.setNum(trans[3][2]) +QString("  ")+ d.setNum(trans[3][3]);
+    emit sig_TransFirstLine(FirstLine);
+    emit sig_TransSecondLine(SecondLine);
+    emit sig_TransThirdLine(ThirdLine);
+    emit sig_TransFourthLine(FourthLine);
+    this->update();
+}
+//slot of Rotate of Joint
+void MyGL::slot_Joint_Rotate_X(){
+    glm::quat r;
+    r.w = cos(glm::radians(5.0/2));
+    r.x = sin(glm::radians(5.0/2));
+    r.y = 0.0f;
+    r.z = 0.0f;
+    Selected->Orientation = r * Selected->Orientation;
+    Traverse(Root);
+    SendTransTOGPU();
+    this->update();
+}
+void MyGL::slot_Joint_Rotate_Y(){
+    glm::quat r;
+    r.w = cos(glm::radians(5.0/2));
+    r.x = 0.0f;
+    r.y = sin(glm::radians(5.0/2));
+    r.z = 0.0f;
+    Selected->Orientation = r * Selected->Orientation;
+    Traverse(Root);
+    SendTransTOGPU();
+    this->update();
+}
+void MyGL::slot_Joint_Rotate_Z(){
+    glm::quat r;
+    r.w = cos(glm::radians(5.0/2));
+    r.x = 0.0f;
+    r.y = 0.0f;
+    r.z = sin(glm::radians(5.0/2));
+    Selected->Orientation = r * Selected->Orientation;
+    Traverse(Root);
+    SendTransTOGPU();
+    this->update();
+}
+
+void MyGL::slot_Joint_Translate_X(){
+    double x = 0.1;
+    Selected->Position[0] += x;
+    Traverse(Root);
+    SendTransTOGPU();
+    this->update();
+}
+void MyGL::slot_Joint_Translate_Y(){
+    double y = 0.1;
+    Selected->Position[1] += y;
+    Traverse(Root);
+    SendTransTOGPU();
+    this->update();
+}
+void MyGL::slot_Joint_Translate_Z(){
+    double z = 0.1;
+    Selected->Position[2] += z;
+    Traverse(Root);
+    SendTransTOGPU();
+    this->update();
+}
+
+//Traverse the Skeleton from the Root
+void MyGL::Traverse(Joint *J){
+    //ADD and Draw the WireFrame
+    if(J == Root){
+
+    }else if(J->WF == nullptr){
+        J->WF = new WireFrame(this);
+        J->WF->J = J;
+//        std::cout<<J->name.toStdString()<<": "<<J->Position[0]<<" "<<J->Position[1]<<" "<<J->Position[2]<<" "<<J->Position[3]<<"\n";
+//        std::cout<<J->name.toStdString()<<": "<<J->GetLocalTransformation()[0][3]<<" "<<J->GetLocalTransformation()[1][3]<<" "<<J->GetLocalTransformation()[2][3]<<" "<<J->GetLocalTransformation()[3][3]<<"\n";
+//        std::cout<<J->name.toStdString()<<": "<<J->GetOverallTranformation()[0][3]<<" "<<J->GetOverallTranformation()[1][3]<<" "<<J->GetOverallTranformation()[2][3]<<" "<<J->GetOverallTranformation()[3][3]<<"\n";
+        J->WF->create();
+    }else{
+        if(J == Selected)
+            J->WF->color = glm::vec4(0,1,1,1);
+        else
+            J->WF->color = glm::vec4(1,1,1,1);
+        J->WF->J = J;
+        J->WF->create();
+    }
+    //Draw the BoneFrame
+    if(J->Parent == nullptr || J->Parent == Root){
+        J->BF = nullptr;
+    }
+    else if(J->BF == nullptr){
+        J->BF = new BoneFrame(this);
+        J->BF->Parent = J->Parent;
+        J->BF->Child = J;
+        J->BF->create();
+    }else{
+        J->BF->Parent = J->Parent;
+        J->BF->Child = J;
+        J->BF->create();
+    }
+    this->update();
+    //Traverse its Children
+    for(int i = 0; i < J->Children.size(); i++){
+        Traverse(J->Children[i]);
+    }
+}
+
+void MyGL::Traverse_Draw(Joint *J){
+    if(J->BF != nullptr){
+        prog_flat.draw(*(J->BF));
+    }
+    if(J->WF != nullptr){
+        prog_flat.draw(*(J->WF));
+    }
+    for(int i = 0; i < J->Children.size(); i++){
+        Traverse_Draw(J->Children[i]);
+    }
+}
+
+//Recursively parsing the json file:
+void QJson_Parsing(QJsonArray objects, Joint *J){
+    //J is the Parent of the following joint
+    //for each joint
+    for(int i = 0; i < objects.size(); i++){
+        QJsonObject obj = objects[i].toObject();
+        //Set the name of Joint
+        QString name = obj["name"].toString();
+        Joint *JTemp = new Joint(name);
+        JTemp->Parent = J;
+        J->addChild(JTemp);
+        //Set the position of the new Joint
+        QJsonArray pos = obj["pos"].toArray();
+        JTemp->Position[0] = pos[0].toDouble();
+        JTemp->Position[1] = pos[1].toDouble();
+        JTemp->Position[2] = pos[2].toDouble();
+        //Set the orientation
+        QJsonArray rot = obj["rot"].toArray();
+        JTemp->Orientation.w = cos((rot[0].toDouble()/180*3.14159)/2);
+        JTemp->Orientation.x = sin((rot[0].toDouble()/180*3.14159)/2) * rot[1].toDouble();
+        JTemp->Orientation.y = sin((rot[0].toDouble()/180*3.14159)/2) * rot[2].toDouble();
+        JTemp->Orientation.z = sin((rot[0].toDouble()/180*3.14159)/2) * rot[3].toDouble();
+        //Set the children
+        QJsonArray Children = obj["children"].toArray();
+//        std::cout<<name.toStdString()<<": "<<JTemp->Position[0]<<" "<<JTemp->Position[1]<<" "<<JTemp->Position[2]<<"\n";
+        QJson_Parsing(Children, J->Children[i]);
+    }
+}
+
+void MyGL::LoadQJsonSkeleton(){
+    QString filename = QFileDialog::getOpenFileName(0, QString("Load Json File"), QDir::currentPath().append(QString("../..")), QString("*.json"));
+    QFile file(filename);
+    if(!file.open(QIODevice::ReadOnly)){
+        qWarning("Could not open the JSON file.");
+        return;
+    }
+    QByteArray file_data = file.readAll();
+
+    QJsonDocument jdoc(QJsonDocument::fromJson(file_data));
+    QJsonObject obj = jdoc.object();
+    QJsonValue Val = obj.value(QString("root"));
+    //qWarning()<<Val;
+    QJsonArray objects;
+    objects.push_back(Val);
+    QJson_Parsing(objects, Root);
+}
+void MyGL::SetBindMatrix(){
+    int num = 0;
+    std::queue<Joint *> J_q;
+    J_q.push(Root);
+    Joint *R = J_q.front();
+    J_q.pop();
+    for(int j = 0; j < R->Children.size(); j++){
+        J_q.push(R->Children[j]);
+    }
+    while(!J_q.empty()){
+        Joint *J = J_q.front();
+        J_q.pop();
+        glm::mat4 J_tran = J->GetOverallTranformation();
+        J->BindMatrix = glm::inverse(J_tran);
+        J->id = num;
+        num++;
+        for(int i = 0; i < J->Children.size(); i++){
+            J_q.push(J->Children[i]);
+        }
+    }
+}
+
+void MyGL::Skinning(){
+    for(int i = 0; i < geom_mesh.Vertices.size(); i++){
+        Vertex *V = geom_mesh.Vertices[i];
+        std::queue<Joint *> J_q;
+        J_q.push(Root);
+        Joint *R = J_q.front();
+        J_q.pop();
+        for(int j = 0; j < R->Children.size(); j++){
+            J_q.push(R->Children[j]);
+        }
+        while(!J_q.empty()){
+            Joint *J = J_q.front();
+            J_q.pop();
+            glm::mat4 J_tran = J->GetOverallTranformation();
+            glm::vec4 J_pos = glm::vec4(J_tran[3][0], J_tran[3][1], J_tran[3][2], 1);
+            double distance = glm::length(J_pos - glm::vec4(V->pos,1));
+            //compare with the influcen pair of vertex V
+            if(V->J_I[0].J == nullptr){
+                V->J_I[0].J = J;
+                V->J_I[0].distance = distance;
+            }else if(V->J_I[0].distance > distance){
+                //set V->J_I[1] by V->J_I[0]
+                V->J_I[1].J = V->J_I[0].J;
+                V->J_I[1].distance = V->J_I[0].distance;
+                V->J_I[0].J = J;
+                V->J_I[0].distance = distance;
+            }else if(V->J_I[1].J == nullptr || V->J_I[1].distance > distance){
+                V->J_I[1].J = J;
+                V->J_I[1].distance = distance;
+            }
+            for(int j = 0; j < J->Children.size(); j++){
+                J_q.push(J->Children[j]);
+            }
+        }
+        //calculate the weight
+        V->J_I[0].w = 1.0f - V->J_I[0].distance/(V->J_I[0].distance + V->J_I[1].distance);
+        V->J_I[1].w = 1.0f - V->J_I[1].distance/(V->J_I[0].distance + V->J_I[1].distance);
+    }
+}
+
+void MyGL::SendBindTOGPU(){
+    std::queue <Joint*> q;
+    std::vector <glm::mat4> BindM;
+    q.push(Root);
+    Joint *J = q.front();
+    q.pop();
+    for(int i = 0; i < J->Children.size(); i++){
+        q.push(J->Children[i]);
+    }
+    while(!q.empty()){
+        J = q.front();
+        q.pop();
+        BindM.push_back(J->BindMatrix);
+        for(int i = 0; i < J->Children.size(); i++){
+            q.push(J->Children[i]);
+        }
+    }
+//    glm::mat4 BM[BindM.size()];
+    prog_skeleton.setBindMat(BindM);
+}
+
+void MyGL::SendTransTOGPU(){
+    std::queue <Joint*> q;
+    std::vector <glm::mat4> TransM;
+    q.push(Root);
+    Joint *J = q.front();
+    q.pop();
+    for(int i = 0; i < J->Children.size(); i++){
+        q.push(J->Children[i]);
+    }
+    while(!q.empty()){
+        J = q.front();
+        q.pop();
+        TransM.push_back(J->GetOverallTranformation());
+        for(int i = 0; i < J->Children.size(); i++){
+            q.push(J->Children[i]);
+        }
+    }
+    prog_skeleton.setJointTransformMat(TransM);
 }

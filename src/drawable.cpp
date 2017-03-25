@@ -2,8 +2,8 @@
 #include <la.h>
 
 Drawable::Drawable(GLWidget277* context)
-    : bufIdx(), bufPos(), bufNor(), bufCol(),
-      idxBound(false), posBound(false), norBound(false), colBound(false),
+    : bufIdx(), bufPos(), bufNor(), bufCol(), bufInfluencer(), bufWeights(),
+      idxBound(false), posBound(false), norBound(false), colBound(false), InfBound(false), WeiBound(false),
       context(context)
 {}
 
@@ -14,6 +14,8 @@ void Drawable::destroy()
     context->glDeleteBuffers(1, &bufPos);
     context->glDeleteBuffers(1, &bufNor);
     context->glDeleteBuffers(1, &bufCol);
+    context->glDeleteBuffers(1, &bufInfluencer);
+    context->glDeleteBuffers(1, &bufWeights);
 }
 
 GLenum Drawable::drawMode()
@@ -60,6 +62,20 @@ void Drawable::generateCol()
     context->glGenBuffers(1, &bufCol);
 }
 
+void Drawable::generateInf()
+{
+    InfBound = true;
+    // Create a VBO on our GPU and store its handle in bufInfluencer
+    context->glGenBuffers(1, &bufInfluencer);
+}
+
+void Drawable::generateWei()
+{
+    WeiBound = true;
+    // Create a VBO on our GPU and store its handle in bufWeights
+    context->glGenBuffers(1, &bufWeights);
+}
+
 bool Drawable::bindIdx()
 {
     if(idxBound) {
@@ -90,4 +106,19 @@ bool Drawable::bindCol()
         context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
     }
     return colBound;
+}
+
+bool Drawable::bindInf()
+{
+    if(InfBound){
+        context->glBindBuffer(GL_ARRAY_BUFFER, bufInfluencer);
+    }
+    return InfBound;
+}
+
+bool Drawable::bindWei()
+{
+    if(WeiBound){
+        context->glBindBuffer(GL_ARRAY_BUFFER, bufWeights);
+    }
 }

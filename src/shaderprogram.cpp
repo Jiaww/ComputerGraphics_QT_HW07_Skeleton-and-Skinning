@@ -1,15 +1,17 @@
 #include "shaderprogram.h"
 #include <QFile>
 #include <QStringBuilder>
-
+#include <iostream>
+#include <queue>
 
 ShaderProgram::ShaderProgram(GLWidget277 *context)
     : vertShader(), fragShader(), prog(),
-      attrPos(-1), attrNor(-1), attrCol(-1),
+      attrPos(-1), attrNor(-1), attrCol(-1), attrInfluencer(-1), attrWeights(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1),
-      unifTime(-1), unifRenderMode(-1),unifFunc1(-1),
+      unifTime(-1), unifRenderMode(-1),unifFunc1(-1), unifTest(-1),unifBindMatrices(-1), unifTransformations(-1),
       context(context)
-{}
+{
+}
 
 void ShaderProgram::create(const char *vertfile, const char *fragfile)
 {
@@ -62,6 +64,8 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     attrPos = context->glGetAttribLocation(prog, "vs_Pos");
     attrNor = context->glGetAttribLocation(prog, "vs_Nor");
     attrCol = context->glGetAttribLocation(prog, "vs_Col");
+    attrInfluencer = context->glGetAttribLocation(prog, "vs_influencer");
+    attrWeights = context->glGetAttribLocation(prog, "vs_weights");
 
     unifModel      = context->glGetUniformLocation(prog, "u_Model");
     unifModelInvTr = context->glGetUniformLocation(prog, "u_ModelInvTr");
@@ -71,6 +75,11 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifTime       = context->glGetUniformLocation(prog, "u_Time");
     unifRenderMode = context->glGetUniformLocation(prog, "u_RenderMode");
     unifFunc1      = context->glGetUniformLocation(prog, "u_Func1");
+
+
+    unifBindMatrices = context->glGetUniformLocation(prog, "u_BindMatrices");
+    unifTransformations = context->glGetUniformLocation(prog, "u_Transformations");
+//    std::cout<<unifModel<<" "<<unifTime<<" "<<unifTest<<" "<<unifBindMatrices<<"\n";
 }
 
 void ShaderProgram::useMe()
@@ -140,7 +149,6 @@ void ShaderProgram::setGeometryColor(glm::vec4 color)
 void ShaderProgram::draw(Drawable &d)
 {
         useMe();
-
     // Each of the following blocks checks that:
     //   * This shader has this attribute, and
     //   * This Drawable has a vertex buffer for this attribute.
@@ -163,6 +171,14 @@ void ShaderProgram::draw(Drawable &d)
         context->glEnableVertexAttribArray(attrCol);
         context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 0, NULL);
     }
+    if (attrInfluencer != -1 && d.bindInf()){
+        context->glEnableVertexAttribArray(attrInfluencer);
+        context->glVertexAttribIPointer(attrInfluencer, 2 , GL_INT, 0, NULL);
+    }
+    if (attrWeights != -1 && d.bindWei()){
+        context->glEnableVertexAttribArray(attrWeights);
+        context->glVertexAttribPointer(attrWeights, 2, GL_FLOAT, false, 0, NULL);
+    }
     // Bind the index buffer and then draw shapes from it.
     // This invokes the shader program, which accesses the vertex buffers.
     d.bindIdx();
@@ -171,8 +187,11 @@ void ShaderProgram::draw(Drawable &d)
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
+    if (attrInfluencer != -1) context->glDisableVertexAttribArray(attrInfluencer);
+    if (attrWeights != -1) context->glDisableVertexAttribArray(attrWeights);
 
     context->printGLErrorLog();
+    glEnable(GL_DEPTH_TEST);
 }
 
 char* ShaderProgram::textFileRead(const char* fileName) {
@@ -267,4 +286,51 @@ void ShaderProgram::setFunc1(int Func1){
     useMe();
     GLint v0 = Func1;
     context->glUniform1i(unifFunc1, v0);
+}
+
+void ShaderProgram::setUnifBindAndTransMatrices(Joint *J){
+    useMe();
+    std::vector<glm::mat4> BM, TM;
+    std::queue<Joint*> q;
+    //pop the Root Joint
+    q.push(J);
+    Joint *Top = q.front();
+    q.pop();
+    for(int i = 0; i < Top->Children.size(); i++){
+        q.push(Top->Children[i]);
+    }
+    while(!q.empty()){
+        Top = q.front();
+        q.pop();
+        glm::mat4 bm = Top->BindMatrix;
+        glm::mat4 tm = Top->GetOverallTranformation();
+        BM.push_back(bm);
+        TM.push_back(tm);
+        for(int i = 0; i < Top->Children.size();i++){
+            q.push(Top->Children[i]);
+        }
+    }
+    glm::mat4 BindM[BM.size()], TransM[TM.size()];
+    for(int i = 0; i < BM.size(); i++){
+        BindM[i] = BM[i];
+        TransM[i] = TM[i];
+    }
+    context->glUniformMatrix4fv(unifBindMatrices, BM.size(), GL_FALSE, &BindM[0][0][0]);
+    context->glUniformMatrix4fv(unifTransformations, TM.size(), GL_FALSE, &TransM[0][0][0]);
+}
+
+void ShaderProgram::setBindMat(std::vector<glm::mat4> bindMatrix){
+    useMe();
+    std::cout<<unifBindMatrices<<"\n";
+    if(unifBindMatrices != -1){
+        context->glUniformMatrix4fv(unifBindMatrices, bindMatrix.size(), GL_FALSE, &bindMatrix.data()[0][0][0]);
+    }
+}
+
+void ShaderProgram::setJointTransformMat(std::vector<glm::mat4> TransMatrix){
+    useMe();
+    std::cout<<unifTransformations<<"\n";
+    if(unifTransformations != -1){
+        context->glUniformMatrix4fv(unifTransformations, TransMatrix.size(), GL_FALSE, &TransMatrix.data()[0][0][0]);
+    }
 }

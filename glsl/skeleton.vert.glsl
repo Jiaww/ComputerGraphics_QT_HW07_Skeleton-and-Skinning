@@ -19,10 +19,13 @@ uniform mat4 u_ModelInvTr;  // The inverse transpose of the model matrix.
 uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformation.
                             // We've written a static matrix for you to use for HW2,
                             // but in HW3 you'll have to generate one yourself
+uniform mat4 u_BindMatrices[100];
 
-uniform int u_Time;
-uniform int u_Func1;
-uniform int u_Test;
+uniform mat4 u_Transformations[100];
+
+in ivec2 vs_influencer;     //The array of vertex influencers
+
+in vec2 vs_weights;         //The array of the weights of the infuencers
 
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
@@ -38,6 +41,7 @@ out vec4 fs_Pos;
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
 
+
 void main()
 {
     fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
@@ -49,30 +53,19 @@ void main()
                                                             // perpendicular to the surface after the surface is transformed by
                                                             // the model matrix.
 
+    vec4 new_pos;
+//    vec2 weight = vs_weights;
+//    new_pos = 0.5f * u_Transformations[vs_influencer[0]] * u_BindMatrices[vs_influencer[0]] * vs_Pos
+//               + 0.5f * u_Transformations[vs_influencer[1]] * u_BindMatrices[vs_influencer[1]] * vs_Pos;
 
-    vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
+    new_pos = vs_Pos;
+    vec4 modelposition;
+    modelposition = u_Model * new_pos;   // Temporarily store the transformed vertex positions for use below
 
-    if(u_Func1 == 1){
-        modelposition += vec4(sin(u_Time * 3.14159 / 50.0f * modelposition.x),
-                              cos(u_Time * 3.14159 / 50.0f * modelposition.y),
-                              sin(u_Time * 3.14159 / 50.0f * modelposition.z),
-                              0);
-    }
-    if(u_Func1 == 2){
-        modelposition += vec4(cos(u_Time * 3.14159 / 50.0f * modelposition.x),
-                              sin(u_Time * 3.14159 / 50.0f * modelposition.y),
-                              cos(u_Time * 3.14159 / 50.0f * modelposition.z),
-                              0);
-    }
-    if(u_Func1 == 3){
-        modelposition += vec4(sin(u_Time * 3.14159 / 50.0f * modelposition.x),
-                              cos(u_Time * 3.14159 / 50.0f * modelposition.y),
-                              tan(u_Time * 3.14159 / 50.0f * modelposition.z),
-                              0);
-    }
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
     fs_Pos      = u_ViewProj * modelposition;
     gl_Position = u_ViewProj * modelposition;// gl_Position is a built-in variable of OpenGL which is
                                              // used to render the final positions of the geometry's vertices
 }
+

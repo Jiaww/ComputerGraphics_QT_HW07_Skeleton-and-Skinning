@@ -18,7 +18,9 @@ SOURCES += \
     $$PWD/mesh.cpp \
     $$PWD/mylistwidget.cpp \
     $$PWD/points.cpp \
-    $$PWD/mydoublespinbox.cpp
+    $$PWD/mydoublespinbox.cpp \
+    $$PWD/joint.cpp \
+    $$PWD/mytreewidget.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -36,4 +38,6 @@ HEADERS += \
     $$PWD/mesh.h \
     $$PWD/mylistwidget.h \
     $$PWD/points.h \
-    $$PWD/mydoublespinbox.h
+    $$PWD/mydoublespinbox.h \
+    $$PWD/joint.h \
+    $$PWD/mytreewidget.h

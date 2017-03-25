@@ -45,3 +45,7 @@ address_sanitizer {
 HEADERS +=
 
 SOURCES +=
+
+DISTFILES += \
+    glsl/skeleton.frag.glsl \
+    glsl/123.vert.glsl

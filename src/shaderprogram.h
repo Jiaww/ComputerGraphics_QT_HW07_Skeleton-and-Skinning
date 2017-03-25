@@ -4,7 +4,7 @@
 #include <glwidget277.h>
 #include <la.h>
 #include <glm/glm.hpp>
-
+#include <joint.h>
 #include "drawable.h"
 
 
@@ -18,6 +18,8 @@ public:
     int attrPos; // A handle for the "in" vec4 representing vertex position in the vertex shader
     int attrNor; // A handle for the "in" vec4 representing vertex normal in the vertex shader
     int attrCol; // A handle for the "in" vec4 representing vertex color in the vertex shader
+    int attrInfluencer;
+    int attrWeights;
 
     int unifModel; // A handle for the "uniform" mat4 representing model matrix in the vertex shader
     int unifModelInvTr; // A handle for the "uniform" mat4 representing inverse transpose of the model matrix in the vertex shader
@@ -27,6 +29,12 @@ public:
     int unifTime; //A handle for the u_Time
     int unifRenderMode; //A handle for the u_RenderMode
     int unifFunc1; //A fun in shader
+
+    int unifTest;
+
+    int unifBindMatrices;
+    int unifTransformations;
+
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
@@ -51,6 +59,11 @@ public:
     void setUnifTime(int timeCount);
     void setRenderMode(int RenderMode);
     void setFunc1(int Func1);
+
+    //Skeleton Func:
+    void setUnifBindAndTransMatrices(Joint*);
+    void setBindMat(std::vector<glm::mat4> bindMatrix);
+    void setJointTransformMat(std::vector<glm::mat4>);
     QString qTextFileRead(const char*);
 
 private:

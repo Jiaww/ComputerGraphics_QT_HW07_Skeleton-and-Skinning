@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1144</width>
-    <height>562</height>
+    <width>1496</width>
+    <height>885</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,8 +72,8 @@
      <rect>
       <x>820</x>
       <y>50</y>
-      <width>39</width>
-      <height>11</height>
+      <width>71</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
@@ -272,7 +272,7 @@
      <rect>
       <x>670</x>
       <y>450</y>
-      <width>80</width>
+      <width>111</width>
       <height>18</height>
      </rect>
     </property>
@@ -285,7 +285,7 @@
      <rect>
       <x>670</x>
       <y>470</y>
-      <width>80</width>
+      <width>111</width>
       <height>18</height>
      </rect>
     </property>
@@ -298,7 +298,7 @@
      <rect>
       <x>670</x>
       <y>490</y>
-      <width>80</width>
+      <width>111</width>
       <height>18</height>
      </rect>
     </property>
@@ -311,8 +311,8 @@
      <rect>
       <x>850</x>
       <y>450</y>
-      <width>80</width>
-      <height>18</height>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -324,12 +324,209 @@
      <rect>
       <x>1010</x>
       <y>450</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>BevelingFace</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_9">
+    <property name="geometry">
+     <rect>
+      <x>649</x>
+      <y>19</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Load_Skeleton</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_10">
+    <property name="geometry">
+     <rect>
+      <x>789</x>
+      <y>17</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Skinning</string>
+    </property>
+   </widget>
+   <widget class="MyTreeWidget" name="treeWidget">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>550</y>
+      <width>641</width>
+      <height>261</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>Joints</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>530</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Joint_Function:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_14">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>560</y>
       <width>80</width>
       <height>18</height>
      </rect>
     </property>
     <property name="text">
-     <string>BevelingFace</string>
+     <string>Rotate_X</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_15">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>600</y>
+      <width>80</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rotate_Y</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_16">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>640</y>
+      <width>80</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rotate_Z</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_11">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>560</y>
+      <width>80</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Translate_X</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_12">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>600</y>
+      <width>80</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Translate_Y</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_13">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>640</y>
+      <width>80</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Translate_Z</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>560</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>590</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>620</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>650</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>930</x>
+      <y>530</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>JointTransformation:</string>
     </property>
    </widget>
   </widget>
@@ -338,7 +535,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1144</width>
+     <width>1496</width>
      <height>19</height>
     </rect>
    </property>
@@ -398,6 +595,12 @@
     <signal>sig_ChangeSelectedVertex(int)</signal>
     <signal>sig_ChangeSelectedHalfEdge(int)</signal>
     <signal>sig_ChangeSelectedFace(int)</signal>
+    <signal>sig_RootNode(QTreeWidgetItem*)</signal>
+    <signal>sig_PassJointTransformation(glm::mat4)</signal>
+    <signal>sig_TransFirstLine(QString)</signal>
+    <signal>sig_TransSecondLine(QString)</signal>
+    <signal>sig_TransThirdLine(QString)</signal>
+    <signal>sig_TransFourthLine(QString)</signal>
     <slot>slot_VertexClicked()</slot>
     <slot>slot_HalfEdgeClicked()</slot>
     <slot>slot_FaceClicked()</slot>
@@ -417,6 +620,16 @@
     <slot>slot_SetSharpFace()</slot>
     <slot>slot_BevelingEdge()</slot>
     <slot>slot_BevelingFace()</slot>
+    <slot>slot_LoadSkeleton()</slot>
+    <slot>slot_Skinning()</slot>
+    <slot>slot_ChosenPart(QTreeWidgetItem*)</slot>
+    <slot>slot_SelectedJoint(QTreeWidgetItem*)</slot>
+    <slot>slot_Joint_Rotate_X()</slot>
+    <slot>slot_Joint_Rotate_Y()</slot>
+    <slot>slot_Joint_Rotate_Z()</slot>
+    <slot>slot_Joint_Translate_X()</slot>
+    <slot>slot_Joint_Translate_Y()</slot>
+    <slot>slot_Joint_Translate_Z()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -438,6 +651,18 @@
    <header>mydoublespinbox.h</header>
    <slots>
     <slot>slot_SetClear()</slot>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>MyTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>mytreewidget.h</header>
+   <slots>
+    <slot>slot_addNode(QTreeWidgetItem*)</slot>
+    <slot>slot_storeNewNodeName(QString)</slot>
+    <slot>slot_ChosenPart(QTreeWidgetItem*)</slot>
+    <slot>slot_addChildToSelected()</slot>
+    <slot>slot_ReturnRootNode(QTreeWidgetItem*)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -819,7 +1044,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>34</x>
-     <y>596</y>
+     <y>561</y>
     </hint>
     <hint type="destinationlabel">
      <x>42</x>
@@ -835,7 +1060,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>708</x>
-     <y>433</y>
+     <y>446</y>
     </hint>
     <hint type="destinationlabel">
      <x>573</x>
@@ -867,7 +1092,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>934</x>
-     <y>434</y>
+     <y>446</y>
     </hint>
     <hint type="destinationlabel">
      <x>560</x>
@@ -899,7 +1124,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>733</x>
-     <y>492</y>
+     <y>506</y>
     </hint>
     <hint type="destinationlabel">
      <x>558</x>
@@ -931,7 +1156,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>881</x>
-     <y>472</y>
+     <y>492</y>
     </hint>
     <hint type="destinationlabel">
      <x>536</x>
@@ -952,6 +1177,230 @@
     <hint type="destinationlabel">
      <x>513</x>
      <y>446</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_9</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_LoadSkeleton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>705</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>595</x>
+     <y>39</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_10</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Skinning()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>844</x>
+     <y>58</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>58</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mygl</sender>
+   <signal>sig_RootNode(QTreeWidgetItem*)</signal>
+   <receiver>treeWidget</receiver>
+   <slot>slot_ReturnRootNode(QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>598</x>
+     <y>97</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>111</x>
+     <y>588</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>treeWidget</sender>
+   <signal>itemClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_SelectedJoint(QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>201</x>
+     <y>580</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>197</x>
+     <y>427</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_14</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Joint_Rotate_X()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>857</x>
+     <y>585</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>459</x>
+     <y>435</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_15</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Joint_Rotate_Y()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>856</x>
+     <y>631</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>473</x>
+     <y>435</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_16</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Joint_Rotate_Z()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>882</x>
+     <y>676</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>489</x>
+     <y>409</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mygl</sender>
+   <signal>sig_TransFirstLine(QString)</signal>
+   <receiver>label_4</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>592</x>
+     <y>360</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1011</x>
+     <y>594</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mygl</sender>
+   <signal>sig_TransSecondLine(QString)</signal>
+   <receiver>label_5</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>498</x>
+     <y>447</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1041</x>
+     <y>624</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mygl</sender>
+   <signal>sig_TransThirdLine(QString)</signal>
+   <receiver>label_6</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>399</x>
+     <y>440</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1050</x>
+     <y>654</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mygl</sender>
+   <signal>sig_TransFourthLine(QString)</signal>
+   <receiver>label_7</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>442</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1026</x>
+     <y>682</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_11</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Joint_Translate_X()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>773</x>
+     <y>587</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>544</x>
+     <y>450</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_12</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Joint_Translate_Y()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>761</x>
+     <y>634</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>487</x>
+     <y>405</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_13</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_Joint_Translate_Z()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>763</x>
+     <y>667</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>540</x>
+     <y>430</y>
     </hint>
    </hints>
   </connection>

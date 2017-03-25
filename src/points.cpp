@@ -10,6 +10,7 @@ void Points::setVert(Vertex *V){
 }
 
 GLenum Points::drawMode(){
+    glDisable(GL_DEPTH_TEST);
     return GL_POINTS;
 }
 
@@ -50,6 +51,7 @@ HalfLines::HalfLines(GLWidget277 *context) : Drawable(context)
 {}
 
 GLenum HalfLines::drawMode(){
+    glDisable(GL_DEPTH_TEST);
     return GL_LINES;
 }
 
@@ -104,6 +106,7 @@ HFace::HFace(GLWidget277 *context) : Drawable(context)
 {}
 
 GLenum HFace::drawMode(){
+    glDisable(GL_DEPTH_TEST);
     return GL_LINES;
 }
 
